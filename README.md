@@ -10,7 +10,9 @@ ASP.NET offers a canonical way to retrieve configuration information without cha
 
 ## Usage
 
-You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well),
+You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well).  For the purposes of this sample, we will use an ASP.NET Core 5.0 web application.
+
+
 
 ## Resources:
 
