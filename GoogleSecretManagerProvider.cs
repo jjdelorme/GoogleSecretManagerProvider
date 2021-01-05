@@ -39,18 +39,13 @@ namespace SecretConfigurationProvider
         }
     }
 
-    public class GoogleSecretManagerOptions
-    {
-        public string ProjectId { get; set; }
-    }
-
     public class GoogleSecretManagerSource : IConfigurationSource
     {
         public string ProjectId;
 
-        public GoogleSecretManagerSource(GoogleSecretManagerOptions options)
+        public GoogleSecretManagerSource(string projectId)
         {
-            ProjectId = options.ProjectId;
+            ProjectId = projectId;
         }
 
         public IConfigurationProvider Build(IConfigurationBuilder builder)
@@ -61,14 +56,19 @@ namespace SecretConfigurationProvider
 
     public static class GoogleSecretManagerExtensions
     {
-        public static IConfigurationBuilder AddGoogleSecretManagerConfiguration(this IConfigurationBuilder configuration, 
-            Action<GoogleSecretManagerOptions> options)
+        const string ProjectEnvVar = "GOOGLE_PROJECT_ID";
+
+        public static IConfigurationBuilder AddGoogleSecretManagerConfiguration(
+            this IConfigurationBuilder configuration, 
+            string projectId)
         {
-            _ = options ?? throw new ArgumentNullException(nameof(options));
+            projectId ??= Environment.GetEnvironmentVariable(ProjectEnvVar);
+        
+            if (projectId == null)
+                throw new ArgumentNullException(nameof(projectId), 
+                    $"Must provide a projectId or set {ProjectEnvVar} env variable.");
             
-            var configOptions = new GoogleSecretManagerOptions();
-            options(configOptions);
-            configuration.Add(new GoogleSecretManagerSource(configOptions));
+            configuration.Add(new GoogleSecretManagerSource(projectId));
             
             return configuration;
         }
