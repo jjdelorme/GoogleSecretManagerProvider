@@ -24,7 +24,7 @@ You can see additional information [here](https://docs.microsoft.com/en-us/aspne
 
 ```csharp
 using SecretConfigurationProvider;
-...
+        ...
         public static IHostBuilder CreateHostBuilder(string[] args) =>
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((hostingContext, config) =>
@@ -36,6 +36,22 @@ using SecretConfigurationProvider;
                     webBuilder.UseStartup<Startup>();
                 });
 ```
+To access the secret value in your code, use ASP.NET's built-in dependency injection within your constructor to obtain the ```IConfiguration``` object.  This object can retrieve configuration from all configured providers including the defaults such as commandline args and environment variables.
+
+```csharp
+        public GreeterService(ILogger<GreeterService> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
+        ...
+
+        public string SayHello()
+        {
+            return $"Hello, I have your secret: {_config["my-secret"]}";
+        }
+```
+
 
 ## Resources:
 
