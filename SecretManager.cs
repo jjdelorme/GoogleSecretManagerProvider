@@ -8,11 +8,42 @@ namespace SecretConfigurationProvider
 {
     public class SecretManager
     {
-        public static void Quickstart(string projectId = "jasondel-grpc-test", string secretId = "my-secret")
+        private SecretManagerServiceClient _client;
+
+        public SecretManager()
         {
             // Create the client.
-            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
+            _client = SecretManagerServiceClient.Create();
+        }
 
+        public String AccessSecret(string projectId, string secretId)
+        {
+            string secretVersionId = "latest";
+
+            // Build the resource name.
+            SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
+
+            try 
+            {
+                // Call the API.
+                AccessSecretVersionResponse result = _client.AccessSecretVersion(secretVersionName);
+
+                // Convert the payload to a string. Payloads are bytes by default.
+                String payload = result.Payload.Data.ToStringUtf8();
+                return payload;
+            }
+            catch (Grpc.Core.RpcException e)
+            {
+                // Supress NotFound exception and return null.
+                if (e.StatusCode == Grpc.Core.StatusCode.NotFound || 
+                        e.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
+                    return null;
+                else
+                    throw;
+            }
+        }           
+        public void CreateSecret(string projectId, string secretId, string secretValue)
+        {
             // Build the parent project name.
             ProjectName projectName = new ProjectName(projectId);
 
@@ -25,19 +56,19 @@ namespace SecretConfigurationProvider
                 },
             };
 
-            Secret createdSecret = client.CreateSecret(projectName, secretId, secret);
+            Secret createdSecret = _client.CreateSecret(projectName, secretId, secret);
 
             // Build a payload.
             SecretPayload payload = new SecretPayload
             {
-                Data = ByteString.CopyFrom("my super secret data", Encoding.UTF8),
+                Data = ByteString.CopyFrom(secretValue, Encoding.UTF8),
             };
 
             // Add a secret version.
-            SecretVersion createdVersion = client.AddSecretVersion(createdSecret.SecretName, payload);
+            SecretVersion createdVersion = _client.AddSecretVersion(createdSecret.SecretName, payload);
 
             // Access the secret version.
-            AccessSecretVersionResponse result = client.AccessSecretVersion(createdVersion.SecretVersionName);
+            AccessSecretVersionResponse result = _client.AccessSecretVersion(createdVersion.SecretVersionName);
 
             // Print the results
             //
@@ -46,23 +77,5 @@ namespace SecretConfigurationProvider
             string data = result.Payload.Data.ToStringUtf8();
             Console.WriteLine($"Plaintext: {data}");
         }     
-
-        public static String AccessSecret(string projectId, string secretId)
-        {
-            string secretVersionId = "latest";
-
-            // Create the client.
-            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
-
-            // Build the resource name.
-            SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
-
-            // Call the API.
-            AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
-
-            // Convert the payload to a string. Payloads are bytes by default.
-            String payload = result.Payload.Data.ToStringUtf8();
-            return payload;
-        }           
     }
 }

@@ -10,8 +10,47 @@ ASP.NET offers a canonical way to retrieve configuration information without cha
 
 ## Usage
 
-You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well).  For the purposes of this sample, we will use an ASP.NET Core 5.0 web application.
+First, clone this repository and add a reference to it in your project.  For example:
 
+```bash
+cd ~/src
+git clone https://github.com/jjdelorme/GoogleSecretManagerProvider.git
+
+cd ~/src/your-aspnet-project
+dotnet add reference ../SecretConfigurationProvider/SecretConfigurationProvider.csproj
+```
+
+You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well).  For the purposes of this sample, we will use an ASP.NET Core 5.0 web application.  Modify your ```Program.cs``` to include the namespace and add the ```ConfigureAppConfiguration(...)``` method to  ```CreateHostBuilder``` with a call to the extension method ```AddGoogleSecretManagerConfiguration``` specifying your Google Project Id as the parameter. 
+
+```csharp
+using SecretConfigurationProvider;
+        ...
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddGoogleSecretManagerConfiguration(projectId: "my-google-projectid");
+                })            
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+```
+To access the secret value in your code, use ASP.NET's built-in dependency injection within your constructor to obtain the ```IConfiguration``` object.  This object can retrieve configuration from all configured providers including the defaults such as commandline args and environment variables.
+
+```csharp
+        public GreeterService(ILogger<GreeterService> logger, IConfiguration config)
+        {
+            _logger = logger;
+            _config = config;
+        }
+        ...
+
+        public string SayHello()
+        {
+            return $"Hello, I have your secret: {_config["my-secret"]}";
+        }
+```
 
 
 ## Resources:

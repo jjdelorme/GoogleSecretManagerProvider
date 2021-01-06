@@ -6,10 +6,13 @@ namespace SecretConfigurationProvider
     public class GoogleSecretManagerProvider : ConfigurationProvider
     {
         public GoogleSecretManagerSource Source { get; }
+        
+        private SecretManager _secretManager;
 
         public GoogleSecretManagerProvider(GoogleSecretManagerSource source)
         {
             Source = source;
+            _secretManager = new SecretManager();
         }
 
         public override bool TryGet(string key, out string value)
@@ -22,7 +25,7 @@ namespace SecretConfigurationProvider
                 }
                 else 
                 {
-                    value = SecretManager.AccessSecret(Source.ProjectId, key);
+                    value = _secretManager.AccessSecret(Source.ProjectId, key);
                     Set(key, value);
                 }
                 
@@ -30,11 +33,7 @@ namespace SecretConfigurationProvider
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(
-                    $"Unable to retrieve secret {key}. \nError: {e.Message}");
-
-                value = null;
-                return false;
+                throw new ApplicationException($"Unable to retrieve secret {key}.", e);
             }
         }
     }
