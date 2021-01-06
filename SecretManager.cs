@@ -23,12 +23,24 @@ namespace SecretConfigurationProvider
             // Build the resource name.
             SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
 
-            // Call the API.
-            AccessSecretVersionResponse result = _client.AccessSecretVersion(secretVersionName);
+            try 
+            {
+                // Call the API.
+                AccessSecretVersionResponse result = _client.AccessSecretVersion(secretVersionName);
 
-            // Convert the payload to a string. Payloads are bytes by default.
-            String payload = result.Payload.Data.ToStringUtf8();
-            return payload;
+                // Convert the payload to a string. Payloads are bytes by default.
+                String payload = result.Payload.Data.ToStringUtf8();
+                return payload;
+            }
+            catch (Grpc.Core.RpcException e)
+            {
+                // Supress NotFound exception and return null.
+                if (e.StatusCode == Grpc.Core.StatusCode.NotFound || 
+                        e.StatusCode == Grpc.Core.StatusCode.InvalidArgument)
+                    return null;
+                else
+                    throw;
+            }
         }           
         public void CreateSecret(string projectId, string secretId, string secretValue)
         {
