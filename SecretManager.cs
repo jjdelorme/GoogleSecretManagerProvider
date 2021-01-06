@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Text;
+using System.Text.RegularExpressions;
 using Google.Cloud.SecretManager.V1;
 using Google.Api.Gax.ResourceNames;
 using Google.Protobuf;
@@ -18,7 +19,10 @@ namespace SecretConfigurationProvider
 
         public String AccessSecret(string projectId, string secretId)
         {
-            string secretVersionId = "latest";
+            const string secretVersionId = "latest";
+
+            if (!IsValidSecretId(secretId))
+                return null;
 
             // Build the resource name.
             SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
@@ -77,5 +81,14 @@ namespace SecretConfigurationProvider
             string data = result.Payload.Data.ToStringUtf8();
             Console.WriteLine($"Plaintext: {data}");
         }     
+
+        /// <summary>
+        /// Secret names can only contain English letters (A-Z), numbers (0-9), dashes (-), and underscores (_)
+        /// </summary>
+        private bool IsValidSecretId(string secretId)
+        {
+            const string secretPattern = @"^[a-zA-Z0-9_.-]+$";
+            return Regex.IsMatch(secretId, secretPattern, RegexOptions.IgnoreCase);
+        }
     }
 }
