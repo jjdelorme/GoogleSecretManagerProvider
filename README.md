@@ -10,9 +10,32 @@ ASP.NET offers a canonical way to retrieve configuration information without cha
 
 ## Usage
 
-You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well).  For the purposes of this sample, we will use an ASP.NET Core 5.0 web application.
+First, clone this repository and add a reference to it in your project.  For example:
 
+```bash
+cd ~/src
+git clone https://github.com/jjdelorme/GoogleSecretManagerProvider.git
 
+cd ~/src/your-aspnet-project
+dotnet add reference ../SecretConfigurationProvider/SecretConfigurationProvider.csproj
+```
+
+You can see additional information [here](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/host/generic-host?view=aspnetcore-5.0) from Microsoft on the .NET Generic Host in ASP.NET Core (and non-http hosts as well).  For the purposes of this sample, we will use an ASP.NET Core 5.0 web application.  Modify your ```Program.cs``` to include the namespace and add the ```ConfigureAppConfiguration(...)``` method to  ```CreateHostBuilder``` with a call to the extension method ```AddGoogleSecretManagerConfiguration``` specifying your Google Project Id as the parameter. 
+
+```csharp
+using SecretConfigurationProvider;
+...
+        public static IHostBuilder CreateHostBuilder(string[] args) =>
+            Host.CreateDefaultBuilder(args)
+                .ConfigureAppConfiguration((hostingContext, config) =>
+                {
+                    config.AddGoogleSecretManagerConfiguration(projectId: "my-google-projectid");
+                })            
+                .ConfigureWebHostDefaults(webBuilder =>
+                {
+                    webBuilder.UseStartup<Startup>();
+                });
+```
 
 ## Resources:
 

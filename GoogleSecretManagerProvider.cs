@@ -30,11 +30,7 @@ namespace SecretConfigurationProvider
             }
             catch (Exception e)
             {
-                Console.Error.WriteLine(
-                    $"Unable to retrieve secret {key}. \nError: {e.Message}");
-
-                value = null;
-                return false;
+                throw new ApplicationException($"Unable to retrieve secret {key}.", e);
             }
         }
     }

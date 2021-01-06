@@ -8,7 +8,24 @@ namespace SecretConfigurationProvider
 {
     public class SecretManager
     {
-        public static void Quickstart(string projectId = "jasondel-grpc-test", string secretId = "my-secret")
+        public static String AccessSecret(string projectId, string secretId)
+        {
+            string secretVersionId = "latest";
+
+            // Create the client.
+            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
+
+            // Build the resource name.
+            SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
+
+            // Call the API.
+            AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
+
+            // Convert the payload to a string. Payloads are bytes by default.
+            String payload = result.Payload.Data.ToStringUtf8();
+            return payload;
+        }           
+        public static void CreateSecret(string projectId, string secretId, string secretValue)
         {
             // Create the client.
             SecretManagerServiceClient client = SecretManagerServiceClient.Create();
@@ -30,7 +47,7 @@ namespace SecretConfigurationProvider
             // Build a payload.
             SecretPayload payload = new SecretPayload
             {
-                Data = ByteString.CopyFrom("my super secret data", Encoding.UTF8),
+                Data = ByteString.CopyFrom(secretValue, Encoding.UTF8),
             };
 
             // Add a secret version.
@@ -46,23 +63,5 @@ namespace SecretConfigurationProvider
             string data = result.Payload.Data.ToStringUtf8();
             Console.WriteLine($"Plaintext: {data}");
         }     
-
-        public static String AccessSecret(string projectId, string secretId)
-        {
-            string secretVersionId = "latest";
-
-            // Create the client.
-            SecretManagerServiceClient client = SecretManagerServiceClient.Create();
-
-            // Build the resource name.
-            SecretVersionName secretVersionName = new SecretVersionName(projectId, secretId, secretVersionId);
-
-            // Call the API.
-            AccessSecretVersionResponse result = client.AccessSecretVersion(secretVersionName);
-
-            // Convert the payload to a string. Payloads are bytes by default.
-            String payload = result.Payload.Data.ToStringUtf8();
-            return payload;
-        }           
     }
 }
