@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Text;
-using Google.Cloud.SecretManager.V1;
+using Google.Cloud.SecretManager.V1Beta1;
 using Google.Api.Gax.ResourceNames;
 using Google.Protobuf;
 
